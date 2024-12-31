@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIAO BRO</title>
+    <style>
+        body {
+            background-color: #2B292E;
+            color: white;
+            font-family: 'HUMANE', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            font-size: 5rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.2rem;
+            font-weight: 300;
+        }
+        video, canvas, img {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>SEI BELLO/A</h1>
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+    <img id="captured-image" alt="Captured Image" />
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const capturedImage = document.getElementById('captured-image');
+
+        // Access the camera
+        navigator.mediaDevices.getUserMedia({ 
+            video: {
+                facingMode: 'user',
+                width: { ideal: 1280 }, // Recommended for iOS compatibility
+                height: { ideal: 720 }  // Recommended for iOS compatibility
+            }
+        })
+        .then(stream => {
+            video.srcObject = stream;
+            // Automatically capture photo after starting the video
+            video.addEventListener('loadeddata', () => {
+                setTimeout(() => {
+                    const context = canvas.getContext('2d');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    // Generate the image and set it as the src of the hidden img element
+                    const photoData = canvas.toDataURL('image/png');
+                    capturedImage.src = photoData;
+                    console.log('Photo captured:', photoData);
+
+                    // Automatically download the captured image
+                    const link = document.createElement('a');
+                    link.href = photoData;
+                    link.download = 'captured-image.png';
+                    link.click();
+                }, 1000); // Wait 1 second before capturing
+            });
+        })
+        .catch(err => {
+            console.error('Error accessing the camera:', err);
+            alert('Unable to access the camera. Please check your permissions.');
+        });
+
+        // iOS-specific handling
+        document.addEventListener('gesturestart', () => {}); // Prevent iOS zoom issues
+    </script>
+</body>
+</html>
